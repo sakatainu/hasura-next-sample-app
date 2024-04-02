@@ -1,0 +1,32 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		}
+	],
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "figurout-firehouse-app",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "[typescriptreact]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+      "editor.maxTokenizationLineLength": 2500,
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "search.exclude": {
+      "**/*yarn.lock": true,
+      "**/dist": true,
+      "**/storybook-static": true
+    }
+  }
+}

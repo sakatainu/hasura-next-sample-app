@@ -1,0 +1,43 @@
+table:
+  name: groupTypeTranslations
+  schema: public
+object_relationships:
+  - name: groupType
+    using:
+      foreign_key_constraint_on: groupTypeCode
+  - name: language
+    using:
+      foreign_key_constraint_on: languageCode
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - groupTypeCode
+        - languageCode
+        - text
+    comment: ""
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - groupTypeCode
+        - languageCode
+        - text
+      filter: {}
+    comment: ""
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - groupTypeCode
+        - languageCode
+        - text
+      filter: {}
+      check: {}
+    comment: ""
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}
+    comment: ""

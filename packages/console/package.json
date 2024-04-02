@@ -1,0 +1,26 @@
+{
+  "name": "@sample/console",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "next-dev": "next dev",
+    "dev": "NEXT_PUBLIC_AUTH_EMULATOR=$AUTH_EMULATOR next dev",
+    "build": "next build",
+    "check-types": "tsc --noEmit",
+    "lint:prettier": "prettier src --ignore-path .gitignore --check --cache",
+    "lint:eslint": "eslint . --ignore-path .gitignore --cache",
+    "lint": "yarn run check-types && yarn run lint:prettier && yarn run lint:eslint",
+    "format:prettier": "yarn run lint:prettier --write",
+    "format:eslint": "yarn run lint:eslint --fix",
+    "format": "yarn run format:prettier && yarn run format:eslint",
+    "export": "yarn run build && next export -o dist/out",
+    "start": "next start",
+    "console": "ts-node -r tsconfig-paths/register -O '{\"noUnusedLocals\": false, \"isolatedModules\": false}'",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@sample/components": "*",
+    "firebase": "9.3.0",
+    "reactfire": "4.2.1"
+  }
+}

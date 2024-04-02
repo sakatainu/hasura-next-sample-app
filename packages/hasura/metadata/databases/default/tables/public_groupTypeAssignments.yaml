@@ -1,0 +1,18 @@
+table:
+  name: groupTypeAssignments
+  schema: public
+object_relationships:
+  - name: group
+    using:
+      foreign_key_constraint_on: groupId
+  - name: groupType
+    using:
+      foreign_key_constraint_on: groupTypeCode
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - groupTypeCode
+        - groupId
+    comment: ""

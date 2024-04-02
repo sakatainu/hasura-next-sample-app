@@ -1,0 +1,46 @@
+table:
+  name: languages
+  schema: public
+is_enum: true
+array_relationships:
+  - name: groupTypeTranslations
+    using:
+      foreign_key_constraint_on:
+        column: languageCode
+        table:
+          name: groupTypeTranslations
+          schema: public
+  - name: planTranslations
+    using:
+      foreign_key_constraint_on:
+        column: languageCode
+        table:
+          name: planTranslations
+          schema: public
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - code
+    comment: ""
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - code
+      filter: {}
+    comment: ""
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - code
+      filter: {}
+      check: {}
+    comment: ""
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}
+    comment: ""

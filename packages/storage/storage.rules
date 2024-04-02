@@ -1,0 +1,11 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /stockIssues.json {
+      allow read: if request.auth != null;
+    }
+    match /{allPaths=**} {
+      allow read, create: if false;
+    }
+  }
+}

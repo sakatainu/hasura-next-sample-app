@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -meuo pipefail
+
+if [ "${GCP_CLOUD_SQL_CONNECTION_NAME}" != "" \
+  -a "${GCP_CLOUD_SQL_DATABASE_NAME}" != "" \
+  -a "${GCP_CLOUD_SQL_USER}" != "" \
+  -a "${GCP_CLOUD_SQL_PASSWORD}" != "" ]; then
+  HASURA_GRAPHQL_DATABASE_URL=postgresql://$(printf %s "${GCP_CLOUD_SQL_USER}" | jq -sRr @uri):$(printf %s "${GCP_CLOUD_SQL_PASSWORD}" | jq -sRr @uri)@/${GCP_CLOUD_SQL_DATABASE_NAME}?host=/cloudsql/${GCP_CLOUD_SQL_CONNECTION_NAME}
+fi
+HASURA_GRAPHQL_DATABASE_URL_WORK_MEM="${HASURA_GRAPHQL_DATABASE_URL}&options=-c%20work_mem%3D${HEAVY_WORK_MEM:-512MB}"
+
+/sbin/haproxy -f /etc/haproxy/haproxy.cfg &
+
+exec \
+  env HASURA_GRAPHQL_SERVER_PORT=18080 \
+  env HASURA_GRAPHQL_DATABASE_URL=$HASURA_GRAPHQL_DATABASE_URL \
+  env HASURA_GRAPHQL_DATABASE_URL_WORK_MEM=$HASURA_GRAPHQL_DATABASE_URL_WORK_MEM \
+  env HASURA_GRAPHQL_JWT_SECRET="$HASURA_GRAPHQL_JWT_SECRET" \
+  $@
+
+fg %1

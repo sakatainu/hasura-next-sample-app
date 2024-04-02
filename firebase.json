@@ -1,0 +1,61 @@
+{ "emulators":
+  { "auth": { "host": "0.0.0.0", "port": 9099 }
+  , "firestore": { "host": "0.0.0.0", "port": 8080 }
+  , "functions": { "host": "0.0.0.0", "port": 5001 }
+  , "ui": { "enabled": true, "host": "0.0.0.0", "port": 4000 }
+  , "storage": { "host": "0.0.0.0", "port": 9199 }
+  , "logging": { "host": "0.0.0.0", "port": 4500 }
+  , "pubsub": { "host":"0.0.0.0", "port": 8085 }
+  , "hosting": { "host":"0.0.0.0", "port": 5000 }
+  , "hub": { "host":"0.0.0.0", "port": 4400 }
+  , "eventarc": { "host":"0.0.0.0", "port": 9299 }
+  }
+, "firestore":
+  { "rules": "packages/firestore/firestore.rules"
+  , "indexes": "packages/firestore/firestore.indexes.json"
+  }
+, "functions":
+  { "source": "packages/functions"
+  , "runtime": "nodejs20"
+  , "postdeploy":
+    [
+    ]
+  , "ignore":
+    [ ".gitignore"
+    , ".eslintrc.js"
+    , "tsconfig.json"
+    , "jest.config.js"
+    , "*.swp"
+    , "**/*.log"
+    , "bin"
+    , "test"
+    , "src/**/*.ts"
+    , "node_modules"
+    ]
+  }
+, "hosting":
+  [ { "public": "packages/console/dist/out"
+    , "target": "console"
+    , "ignore":
+      [ "firebase.json"
+      , "**/.*"
+      , "**/node_modules/**"
+      ]
+    , "trailingSlash": false
+    , "cleanUrls": true
+    }
+  , { "public": "packages/partner/dist/out"
+    , "target": "partner"
+    , "ignore":
+      [ "firebase.json"
+      , "**/.*"
+      , "**/node_modules/**"
+      ]
+    , "trailingSlash": false
+    , "cleanUrls": true
+    }
+  ]
+, "storage":
+  { "rules": "packages/storage/storage.rules"
+  }
+}

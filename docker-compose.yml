@@ -1,0 +1,315 @@
+services:
+  core: &core
+    build:
+      context: .
+      target: development
+      args:
+        workdir: /app
+        node_version: 20.10
+    command: 'true'
+  mounted: &mounted
+    <<: *core
+    volumes:
+      - .:/app
+      - root_dot_firebase:/app/.firebase
+      - root_yarn:/app/.yarn
+      - root_node_modules:/app/node_modules
+      - console_node_modules:/app/packages/console/node_modules
+        # - console_coverage:/app/packages/console/coverage
+      - console_dist:/app/packages/console/dist
+      - /app/packages/console/.next
+      - hasura_node_modules:/app/packages/hasura/node_modules
+      - components_node_modules:/app/packages/components/node_modules
+    links:
+      - core
+
+  base: &base
+    <<: *mounted
+    environment: &env
+      FIREBASE_API_KEY: ${FIREBASE_API_KEY:-demo-project}
+      FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN:-demo-project}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-demo-project}
+      FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET:-demo-project.appspot.com}
+      FIREBASE_MESSAGING_SENDER_ID: ${FIREBASE_MESSAGING_SENDER_ID:-demo-project}
+      FIREBASE_APP_ID: ${FIREBASE_APP_ID:-demo-project}
+      FIREBASE_MEASUREMENT_ID: ${FIREBASE_MEASUREMENT_ID:-}
+
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${FIREBASE_API_KEY:-demo-project}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN:-demo-project}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-demo-project}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET:-demo-project.appspot.com}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${FIREBASE_MESSAGING_SENDER_ID:-demo-project}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${FIREBASE_APP_ID:-demo-project}
+      NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${FIREBASE_MEASUREMENT_ID:-}
+      NEXT_PUBLIC_API_URL: ${API_URL:-https://kavote-dev-api.firebaseapp.com}
+      NEXT_PUBLIC_FEATURES_ENABLED: ${NEXT_PUBLIC_FEATURES_ENABLED:-true}
+
+      ENVIRONMENT_NAME: ${ENVIRONMENT_NAME:-development}
+    links:
+      - mounted
+  console:
+    <<: *base
+    command: yarn workspace @sample/console dev
+    environment:
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${FIREBASE_API_KEY:-demo-project}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN:-demo-project}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-demo-project}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET:-demo-project.appspot.com}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${FIREBASE_MESSAGING_SENDER_ID:-demo-project}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${FIREBASE_APP_ID:-demo-project}
+      NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${FIREBASE_MEASUREMENT_ID:-}
+      NEXT_PUBLIC_GRAPHQL_BASE_URL: ${GRAPHQL_BASE_URL:-http://localhost:8082}
+      NEXT_PUBLIC_FEATURES_ENABLED: ${NEXT_PUBLIC_FEATURES_ENABLED:-true}
+
+      NEXT_PUBLIC_GRAPHQL_JWT_SECRET: '0123456789abcdef0123456789abcdef'
+      FIRESTORE_EMULATOR_HOST: ${FIRESTORE_EMULATOR_HOST:-localhost}
+      FIRESTORE_EMULATOR_PORT: ${FIRESTORE_EMULATOR_PORT:-8080}
+      AUTH_EMULATOR: ${AUTH_EMULATOR:-http://localhost:9099}
+      # STORAGE_EMULATOR_HOST: ${STORAGE_EMULATOR_HOST:-localhost}
+      # STORAGE_EMULATOR_PORT: ${STORAGE_EMULATOR_PORT:-9199}
+      NODE_OPTIONS: --max-old-space-size=4096
+
+      NEXT_PUBLIC_IMPACT_API_PUBLIC_KEY: ${IMPACT_API_PUBLIC_KEY:------BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2Bw/Za6bolNNffZXbWEo\nZHItLUREAVMkGSgPHFlB3XSlMTbVna927fu5Yy26cAJOZFWUGKz4WwKup/xi1eAf\nTFosFIeuA2MWyuJ8hHCJcVwlVXD+SGC9eeLxadXt98HFmYMwHeeWNDd/KpBvs1i8\nmZPWpbEcXHylF1AFOqXF52d3fI8RTDH1ZkWEbs8T1JasCTbSzxeHxfEYzHROSBA9\nlWSTSMBltX+FXL3HpLtV2FYqu5Y6tUmqVR7JQfuVI1dthhKUwatNgFR0lGiUTfW5\nCe4Eii+6zJG/gvgYVxCb8iARWS2YwT9DzJruVSKnLaKwN4Hn4+B3M803QnHDrX1D\nVQIDAQAB\n-----END PUBLIC KEY-----}
+    links:
+      - base
+    ports:
+      - 3000:3000
+  emulators: &emulators
+    build:
+      context: .
+      target: emulators
+      args:
+        workdir: /app
+        node_version: 20.10
+    command: 'true'
+    init: true
+    stop_signal: SIGINT
+    stop_grace_period: 1m
+    volumes:
+      - root_dot_firebase:/app/.firebase
+      - root_yarn:/app/.yarn
+      - root_node_modules:/app/node_modules
+      - console_dist:/app/packages/console/dist
+      - /app/packages/console/.next
+      - components_node_modules:/app/packages/components/node_modules
+      - ./firebase.json:/app/firebase.json
+      - ./bin:/app/bin
+      - ./package.json:/app/package.json
+      - ./yarn.lock:/app/yarn.lock
+      - ./packages/functions:/app/packages/functions
+      - ./packages/firestore:/app/packages/firestore
+      - ./packages/storage:/app/packages/storage
+      - ./patches:/app/patches
+      - firebase_data:/firebase
+      - ./.firebaserc:/app/.firebaserc
+    environment: &emulators_environment
+
+      GCLOUD_PROJECT: ${FIREBASE_PROJECT_ID:-demo-project}
+      FIRESTORE_EMULATOR_HOST: localhost:8080
+      FIREBASE_AUTH_EMULATOR_HOST: localhost:9099
+      PUBSUB_EMULATOR_HOST: localhost:8085
+      FIREBASE_STORAGE_EMULATOR_HOST: localhost:9199
+
+      GRAPHQL_ADMIN_SECRET: ${GRAPHQL_ADMIN_SECRET:-myadminsecretkey}
+      GRAPHQL_BASE_URL: http://graphql:8082
+
+      SMTP_HOST: ${SMTP_HOST:-mailhog}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-user}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-pass}
+      CONSOLE_BASE_URL: ${CONSOLE_BASE_URL:-http://localhost:3000}
+      MAIL_SENDER: ${MAIL_SENDER:-support@email.com}
+      CUSTOMER_SUPPORT_EMAIL: ${CUSTOMER_SUPPORT_EMAIL:-cs@email.com}
+      ENVIRONMENT_NAME: ${ENVIRONMENT_NAME:-development}
+
+      CONFIRMATION_EMAIL: ${CONFIRMATION_EMAIL:-user@example.com}
+      ARTICLES_DELAY_DAYS: ${ARTICLES_DELAY_DAYS:-2}
+
+      SERVICE_ACCOUNT_BCRYPT_COST: ${SERVICE_ACCOUNT_BCRYPT_COST:-10}
+      SERVICE_ACCOUNT_JWT_ALG: ${SERVICE_ACCOUNT_JWT_ALG:-RS256}
+      SERVICE_ACCOUNT_JWT_EXPIRATION: ${SERVICE_ACCOUNT_JWT_EXPIRATION:-3600}
+      SERVICE_ACCOUNT_JWT_SECRET: ${SERVICE_ACCOUNT_JWT_SECRET:------BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDYHD9lrpuiU019\\n9ldtYShkci0tREQBUyQZKA8cWUHddKUxNtWdr3bt+7ljLbpwAk5kVZQYrPhbAq6n\\n/GLV4B9MWiwUh64DYxbK4nyEcIlxXCVVcP5IYL154vFp1e33wcWZgzAd55Y0N38q\\nkG+zWLyZk9alsRxcfKUXUAU6pcXnZ3d8jxFMMfVmRYRuzxPUlqwJNtLPF4fF8RjM\\ndE5IED2VZJNIwGW1f4Vcvceku1XYViq7ljq1SapVHslB+5UjV22GEpTBq02AVHSU\\naJRN9bkJ7gSKL7rMkb+C+BhXEJvyIBFZLZjBP0PMmu5VIqctorA3gefj4HczzTdC\\nccOtfUNVAgMBAAECggEAEywiYGImvYvCuV+URF2/vcrhVig9w5j9gAaCnK27KatH\\nsn+JC7BoOSxsDIVJ39ZcimCLPyCCogmxYVwt5TKOeZwbArFCJLEdnF85KRjAy3VK\\nJ0kweKRYevVBcfXAOGA7qGcFQEnuP0YDJU1jaNerrRD6vyq2IkBj9xcAIm1YNYiv\\nHe8Rv3/5Htvv2277VDpv5cdjta8DDrU4k07yvh9P310MLkgdDu2OZXk0mDv5yZHg\\nWeuYBdO6K+FgP5/8zbkQ2FLm1cFeVDy0+qD56K/a2zmijuzrXacD0grH+JpEOHgv\\njhu7DzAn26xcZrjVFSgn2WV8Hh9YbDWVRHDkssu6WwKBgQDwFOqx6OukBMqSzUyG\\np/i4kdgJ2UslK8AoKb42IYerJqZEkRv30xiGBvFAWCv5m18ZgUc/NPV0Fi3Kl3qC\\nYDLR3upTiDahUytn7XPkntzPaUCVfHebM50Zc44Uq3+Hglp1yniDW3ZDYQXk64gY\\nP07uAG8VXWmEkAacjzk63q8ArwKBgQDmcHKB7TRtzWzwpVrj+nCjYzTU9mmSA2s7\\nJ92QuYEnMjol+YkWCNua3STUFVfBnbjVdUhFMmu9JnVaDvL5x8tAsOgNLlJgY1w0\\nBcb3ZRt4yBXF+WhT2d55JY6S2tKn/JmRn3wqu+CKizN2T4jpJlLGaRAKXaDKE/jo\\n+GozrnJVOwKBgDXm3FKZUt5+XOTcxwOsjsERrYl4idCMpBXgWV5Z5NXeVZIrajYX\\n5Peic2PY5/aglZdqWQ6t2zX3DMzheZXv9zj7bWzXtjw+Kg6pV03LBRRkMyXczhXA\\nXtMqCIpHfthzwc+UZ75GOKUkEWi2INYg0J3K5yXK1Tf4BiP8XAMFoBDtAoGBAKTE\\nilu0S+SnGdoHobGZBKkO6lvLxTiOEUI/AwHUYjCwjTtR7V8//iYBMbAjgpgCOoMG\\nVSKFJtwcf5RhVAKdhQtAcuvZzzT0Vp0r9FQ4iygViNwBtUMfaR+eZw9CP5W12+hv\\n7MxxgeAOIEHcJLzwlgcgYEPJJorXNQb/eJBzj3S5AoGAB/2deaFcI3gdbpJ1fm7v\\nfbrautXZbMgFsEeP9N7ko4dHpEqDyRaTTa3tg7NhF6/nazaAvf6NTTE6WUry3DQN\\nOi5Kt/6bEGNTIi6IUQXKtKLELsqoE33hdIxrtnPQCfF5rufMsIE3HOBEj/yM5K3r\\nu8OuVqVNi3pMTlgz2LkuSwI=\\n-----END PRIVATE KEY-----}
+      IMPACT_API_PRIVATE_KEY: ${IMPACT_API_PRIVATE_KEY:------BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDYHD9lrpuiU019\\n9ldtYShkci0tREQBUyQZKA8cWUHddKUxNtWdr3bt+7ljLbpwAk5kVZQYrPhbAq6n\\n/GLV4B9MWiwUh64DYxbK4nyEcIlxXCVVcP5IYL154vFp1e33wcWZgzAd55Y0N38q\\nkG+zWLyZk9alsRxcfKUXUAU6pcXnZ3d8jxFMMfVmRYRuzxPUlqwJNtLPF4fF8RjM\\ndE5IED2VZJNIwGW1f4Vcvceku1XYViq7ljq1SapVHslB+5UjV22GEpTBq02AVHSU\\naJRN9bkJ7gSKL7rMkb+C+BhXEJvyIBFZLZjBP0PMmu5VIqctorA3gefj4HczzTdC\\nccOtfUNVAgMBAAECggEAEywiYGImvYvCuV+URF2/vcrhVig9w5j9gAaCnK27KatH\\nsn+JC7BoOSxsDIVJ39ZcimCLPyCCogmxYVwt5TKOeZwbArFCJLEdnF85KRjAy3VK\\nJ0kweKRYevVBcfXAOGA7qGcFQEnuP0YDJU1jaNerrRD6vyq2IkBj9xcAIm1YNYiv\\nHe8Rv3/5Htvv2277VDpv5cdjta8DDrU4k07yvh9P310MLkgdDu2OZXk0mDv5yZHg\\nWeuYBdO6K+FgP5/8zbkQ2FLm1cFeVDy0+qD56K/a2zmijuzrXacD0grH+JpEOHgv\\njhu7DzAn26xcZrjVFSgn2WV8Hh9YbDWVRHDkssu6WwKBgQDwFOqx6OukBMqSzUyG\\np/i4kdgJ2UslK8AoKb42IYerJqZEkRv30xiGBvFAWCv5m18ZgUc/NPV0Fi3Kl3qC\\nYDLR3upTiDahUytn7XPkntzPaUCVfHebM50Zc44Uq3+Hglp1yniDW3ZDYQXk64gY\\nP07uAG8VXWmEkAacjzk63q8ArwKBgQDmcHKB7TRtzWzwpVrj+nCjYzTU9mmSA2s7\\nJ92QuYEnMjol+YkWCNua3STUFVfBnbjVdUhFMmu9JnVaDvL5x8tAsOgNLlJgY1w0\\nBcb3ZRt4yBXF+WhT2d55JY6S2tKn/JmRn3wqu+CKizN2T4jpJlLGaRAKXaDKE/jo\\n+GozrnJVOwKBgDXm3FKZUt5+XOTcxwOsjsERrYl4idCMpBXgWV5Z5NXeVZIrajYX\\n5Peic2PY5/aglZdqWQ6t2zX3DMzheZXv9zj7bWzXtjw+Kg6pV03LBRRkMyXczhXA\\nXtMqCIpHfthzwc+UZ75GOKUkEWi2INYg0J3K5yXK1Tf4BiP8XAMFoBDtAoGBAKTE\\nilu0S+SnGdoHobGZBKkO6lvLxTiOEUI/AwHUYjCwjTtR7V8//iYBMbAjgpgCOoMG\\nVSKFJtwcf5RhVAKdhQtAcuvZzzT0Vp0r9FQ4iygViNwBtUMfaR+eZw9CP5W12+hv\\n7MxxgeAOIEHcJLzwlgcgYEPJJorXNQb/eJBzj3S5AoGAB/2deaFcI3gdbpJ1fm7v\\nfbrautXZbMgFsEeP9N7ko4dHpEqDyRaTTa3tg7NhF6/nazaAvf6NTTE6WUry3DQN\\nOi5Kt/6bEGNTIi6IUQXKtKLELsqoE33hdIxrtnPQCfF5rufMsIE3HOBEj/yM5K3r\\nu8OuVqVNi3pMTlgz2LkuSwI=\\n-----END PRIVATE KEY-----}
+      STOCK_PRICES_EXPORT_BUCKET: ${STOCK_PRICES_EXPORT_BUCKET:-fo-impact-data}
+      STOCK_PRICES_EXPORT_YEARS: ${STOCK_PRICES_EXPORT_YEARS:-4}
+      IMPACT_API_URL: ${IMPACT_API_URL:-https://impact-api-dev.Sample.com}
+    links:
+      - base
+      # - mailhog
+    expose:
+      - 4000
+      - 4500
+      - 5001
+      - 8080
+      - 8085
+      - 9099
+      - 9199
+  emulators-for-console:
+    <<: *emulators
+    command: node_modules/.bin/firebase --project='demo-project' emulators:start
+    links:
+      - emulators
+    ports:
+      - 4000:4000
+      - 4400:4400
+      - 4500:4500
+      - 5000:5000
+      - 5001:5001
+      - 8080:8080
+      - 8085:8085
+      - 9099:9099
+      - 9199:9199
+  postgresql:
+    #cpus: 1
+    build:
+      context: .
+      target: postgres
+      args:
+        workdir: /app
+        node_version: 20.10
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./tmp/run:/var/run/postgresql
+      - ./tmp/initsql:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_INITDB_ARGS: --encoding=UTF-8 --lc-collate=C.UTF-8 --lc-ctype=C.UTF-8
+    # command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all
+    ports:
+      - 5432:5432
+    command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=app -c shared_buffers=${PG_SHARED_BUFFERS:-1GB}
+  graphql:
+    # cpus: '0.5'
+    # mem_limit: 512MB
+    build:
+      context: ./packages/hasura
+      target: graphql-engine
+      args:
+        hasura_version: v2.34.0
+    ports:
+      - 8082:8082
+    depends_on:
+      - postgresql
+      - hasura
+    environment:
+      # HASURA_GRAPHQL_DATABASE_URL_WORK_MEM: postgres://postgres:postgrespassword@postgresql:5432/app?options=-c%20work_mem%3D512MB
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgresql:5432/app?user=postgres&password=postgrespassword
+      ## enable the console served by server
+      # HASURA_GRAPHQL_ENABLE_CONSOLE: "false" # set to "false" to disable console
+      # HASURA_GRAPHQL_DEV_MODE: "false"
+      HASURA_GRAPHQL_ENABLED_APIS: graphql
+      HASURA_GRAPHQL_EXPERIMENTAL_FEATURES: 'naming_convention'
+      # HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      # HASURA_GRAPHQL_ENABLED_LOG_TYPES: http-log, query-log
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: http-log
+      HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET:-{"type":"HS256","key":"0123456789abcdef0123456789abcdef"}}
+      HASURA_GRAPHQL_EVENTS_HTTP_POOL_SIZE: 10
+      HASURA_GRAPHQL_PG_CONNECTIONS: 1
+      HASURA_GRAPHQL_PG_TIMEOUT: 1
+      HASURA_GRAPHQL_NO_OF_RETRIES: 10
+      HASURA_GRAPHQL_PG_CONN_LIFETIME: 1
+      HASURA_GRAPHQL_PG_POOL_TIMEOUT: 1
+      # HASURA_GRAPHQL_POOL_TIMEOUT: 1
+      # HASURA_GRAPHQL_USE_PREPARED_STATEMENTS: 'true'
+      # HASURA_GRAPHQL_TX_ISOLATION:
+      # HASURA_GRAPHQL_READ_REPLICA_URLS
+      # HASURA_GRAPHQL_CONNECTIONS_PER_READ_REPLICA
+      GCP_CLOUD_SQL_USER: ${GCP_CLOUD_SQL_USER:-}
+      GCP_CLOUD_SQL_PASSWORD: ${GCP_CLOUD_SQL_PASSWORD:-}
+      GCP_CLOUD_SQL_CONNECTION_NAME: ${GCP_CLOUD_SQL_CONNECTION_NAME:-}
+      GCP_CLOUD_SQL_DATABASE_NAME: ${GCP_CLOUD_SQL_DATABASE_NAME:-}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+
+      ACTION_BASE_ENDPOINT: http://emulators-for-console:5001/${FIREBASE_PROJECT_ID:-demo-project}/us-central1/hasuraactions
+      HEAVY_CONNECTIONS: 1
+      HEAVY_WORK_MEM: 512MB
+      HASURA_GRAPHQL_ENABLE_TELEMETRY: false
+
+      PORT: 8082
+    volumes:
+      - ./packages/hasura/entrypoint.sh:/entrypoint.sh
+      - ./packages/hasura/haproxy.cfg:/etc/haproxy/haproxy.cfg
+    healthcheck:
+      test:
+        - CMD
+        - nc
+        - -z
+        - postgresql
+        - '5432'
+      interval: 5s
+      timeout: 5s
+      retries: 100
+      start_period: 5s
+  hasura:
+    image: hasura/graphql-engine:v2.34.0-ce.cli-migrations-v3
+    ports:
+      - 8081:8080
+    depends_on:
+      - postgresql
+    environment:
+      ## Hasura metadata
+      HASURA_GRAPHQL_MIGRATIONS_DIR: /app/migrations
+      HASURA_GRAPHQL_METADATA_DIR: /app/metadata
+      ## this env var can be used to add the above postgres database to Hasura as a data source. this can be removed/updated based on your needs
+      HASURA_GRAPHQL_DATABASE_URL_WORK_MEM: postgres://postgres:postgrespassword@postgresql:5432/app?options=-c%20work_mem%3D512MB
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgresql:5432/app
+      ## enable the console served by server
+      HASURA_GRAPHQL_ENABLE_CONSOLE: 'true' # set to "false" to disable console
+      HASURA_GRAPHQL_EXPERIMENTAL_FEATURES: 'naming_convention'
+      ## enable debugging mode. It is recommended to disable this in production
+      HASURA_GRAPHQL_DEV_MODE: 'true'
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      ## uncomment next line to set an admin secret
+      # HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+      # HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      # HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET:-{"type":"HS256","key":"0123456789abcdef0123456789abcdef"}}
+      HASURA_GRAPHQL_PG_CONNECTIONS: 1
+      HASURA_GRAPHQL_PG_TIMEOUT: 1
+      HASURA_GRAPHQL_NO_OF_RETRIES: 10
+      HASURA_GRAPHQL_PG_CONN_LIFETIME: 1
+      HASURA_GRAPHQL_PG_POOL_TIMEOUT: 1
+      # HASURA_GRAPHQL_POOL_TIMEOUT: 1
+      GCP_CLOUD_SQL_USER: ${GCP_CLOUD_SQL_USER:-}
+      GCP_CLOUD_SQL_PASSWORD: ${GCP_CLOUD_SQL_PASSWORD:-}
+      GCP_CLOUD_SQL_CONNECTION_NAME: ${GCP_CLOUD_SQL_CONNECTION_NAME:-}
+      GCP_CLOUD_SQL_DATABASE_NAME: ${GCP_CLOUD_SQL_DATABASE_NAME:-}
+
+      ACTION_BASE_ENDPOINT: http://emulators-for-console:5001/${FIREBASE_PROJECT_ID:-demo-project}/us-central1/hasuraactions
+    volumes:
+      - ./packages/hasura:/app
+    working_dir: /app
+    healthcheck:
+      test:
+        - CMD
+        - nc
+        - -z
+        - postgresql
+        - '5432'
+      interval: 5s
+      timeout: 5s
+      retries: 100
+      start_period: 5s
+version: '3.8'
+volumes:
+  root_dot_firebase:
+  root_yarn:
+  root_node_modules:
+  console_node_modules:
+  console_coverage:
+  console_dist:
+  functions_dot_yarn:
+  functions_node_modules:
+  functions_build:
+  firebase_data:
+  playwright_node_modules:
+  postgresql_data:
+  hasura_node_modules:
+  storybook_node_modules:
+  partner_node_modules:
+  partner_coverage:
+  partner_dist:
+  components_node_modules:

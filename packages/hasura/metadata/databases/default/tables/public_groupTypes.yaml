@@ -1,0 +1,45 @@
+table:
+  name: groupTypes
+  schema: public
+array_relationships:
+  - name: groupTypeAssignments
+    using:
+      foreign_key_constraint_on:
+        column: groupTypeCode
+        table:
+          name: groupTypeAssignments
+          schema: public
+  - name: groupTypeTranslations
+    using:
+      foreign_key_constraint_on:
+        column: groupTypeCode
+        table:
+          name: groupTypeTranslations
+          schema: public
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - code
+    comment: ""
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - code
+      filter: {}
+    comment: ""
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - code
+      filter: {}
+      check: {}
+    comment: ""
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}
+    comment: ""

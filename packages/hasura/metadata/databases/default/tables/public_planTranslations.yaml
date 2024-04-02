@@ -1,0 +1,43 @@
+table:
+  name: planTranslations
+  schema: public
+object_relationships:
+  - name: language
+    using:
+      foreign_key_constraint_on: languageCode
+  - name: plan
+    using:
+      foreign_key_constraint_on: planCode
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - languageCode
+        - planCode
+        - text
+    comment: ""
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - languageCode
+        - planCode
+        - text
+      filter: {}
+    comment: ""
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - languageCode
+        - planCode
+        - text
+      filter: {}
+      check: {}
+    comment: ""
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}
+    comment: ""

@@ -1,0 +1,47 @@
+table:
+  name: memberships
+  schema: public
+object_relationships:
+  - name: group
+    using:
+      foreign_key_constraint_on: groupId
+  - name: ownership
+    using:
+      manual_configuration:
+        column_mapping:
+          groupId: groupId
+          userId: userId
+        insertion_order: null
+        remote_table:
+          name: ownerships
+          schema: public
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - groupId
+        - userId
+    comment: ""
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - groupId
+        - userId
+      filter: {}
+    comment: ""
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - groupId
+        - userId
+      filter: {}
+      check: {}
+    comment: ""
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}
+    comment: ""

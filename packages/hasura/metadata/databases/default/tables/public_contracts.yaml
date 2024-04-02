@@ -1,0 +1,49 @@
+table:
+  name: contracts
+  schema: public
+object_relationships:
+  - name: group
+    using:
+      foreign_key_constraint_on: groupId
+  - name: plan
+    using:
+      foreign_key_constraint_on: planCode
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - maxUsers
+        - planCode
+        - expireAt
+        - startAt
+        - groupId
+    comment: ""
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - maxUsers
+        - planCode
+        - expireAt
+        - startAt
+        - groupId
+      filter: {}
+    comment: ""
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - maxUsers
+        - planCode
+        - expireAt
+        - startAt
+        - groupId
+      filter: {}
+      check: {}
+    comment: ""
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}
+    comment: ""

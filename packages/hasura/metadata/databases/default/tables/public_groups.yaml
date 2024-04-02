@@ -1,0 +1,56 @@
+table:
+  name: groups
+  schema: public
+object_relationships:
+  - name: contract
+    using:
+      foreign_key_constraint_on:
+        column: groupId
+        table:
+          name: contracts
+          schema: public
+  - name: groupTypeAssignment
+    using:
+      foreign_key_constraint_on:
+        column: groupId
+        table:
+          name: groupTypeAssignments
+          schema: public
+array_relationships:
+  - name: memberships
+    using:
+      foreign_key_constraint_on:
+        column: groupId
+        table:
+          name: memberships
+          schema: public
+insert_permissions:
+  - role: anonymous
+    permission:
+      check: {}
+      columns:
+        - name
+        - id
+    comment: ""
+select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - name
+        - id
+      filter: {}
+    comment: ""
+update_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - name
+        - id
+      filter: {}
+      check: {}
+    comment: ""
+delete_permissions:
+  - role: anonymous
+    permission:
+      filter: {}
+    comment: ""
